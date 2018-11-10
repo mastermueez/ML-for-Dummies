@@ -7,7 +7,7 @@ This program can:
 * show graphical data summary (bar chart, histogram, scatter plot) of a column (or columns) of your choosing
 * show textual data summary such as the number of null and unique values in each column
 * allow you to select a class that you want to predict
-* toggle cross-validation
+* toggle cross-validation mode
 * manually drop columns using a tick list
 * show feature importance
 * choose an ML algorithm to use
