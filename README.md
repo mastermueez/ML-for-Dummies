@@ -1,6 +1,6 @@
 # ML-for-Dummies
 
-Dependency required other than anaconda installation: [XGBoost](https://xgboost.readthedocs.io/en/latest/build.html)
+Dependency required other than an anaconda installation: [XGBoost](https://xgboost.readthedocs.io/en/latest/build.html)
 
 This program can:
 * encode a CSV file using one hot encoding or label encoding or a combination of both and export it
