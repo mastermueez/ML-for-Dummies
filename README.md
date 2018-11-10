@@ -10,5 +10,5 @@ This program can:
 * toggle cross-validation mode
 * manually drop columns using a tick list
 * show feature importance
-* choose an ML algorithm to use
+* let user pick an ML algorithm to use
 * alternate between every possible feature combination during prediction
