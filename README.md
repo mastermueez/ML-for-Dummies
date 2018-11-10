@@ -12,3 +12,5 @@ This program can:
 * show feature importance
 * let user pick an ML algorithm to use
 * alternate between every possible feature combination during prediction
+
+Here's a [demo](https://www.youtube.com/watch?v=Ip2sFECF_is&t=125s) of an older version.
