@@ -64,12 +64,10 @@ class View():
         self.currentAlgorithmOption = self.createOptionMenu(algoSelectionLabelName, algoDefaultOption, algoOptions)
 
         #CLASSIFICATION REPORT OPTION MENU
-        """
         clfReportcurveLabelName = "See classification report"
-        clfReportDefaultOption = "No"
-        clfReportOptions = [clfReportDefaultOption, "Yes"]
+        clfReportDefaultOption = "Yes"
+        clfReportOptions = [clfReportDefaultOption, "No"]
         self.currentClfReportOption = self.createOptionMenu(clfReportcurveLabelName, clfReportDefaultOption, clfReportOptions)
-        """
 
         #CROSS VALIDATION OPTION MENU
         CVlabelName = "Perform cross validation"
@@ -109,7 +107,7 @@ class View():
     def createForm(self):
         #LABELS AND ENTRIES
         index = 0
-        defaultEntry = ['Outcome', '67', '2']
+        defaultEntry = ['class', '67', '2']
         for labelText in self.labelTextList:
             row = Frame()    
             label = Label(row, width=36, text = labelText, anchor='w', font=(self.fontType, self.fontSize), bg = self.labelBGColor, fg = self.labelFGColor)
@@ -308,6 +306,30 @@ class View():
         if strVar.get() == "Yes":
             status = True
         return status
+
+
+    # GENERIC NEW WINDOW
+
+    def displayInfoInNewWindow(self, windowName, contents, contentIsTextual):
+        newWindow = Toplevel()
+        newWindow.wm_title(windowName)
+        for labelName in contents:
+            row = Frame(newWindow)
+            if contentIsTextual:
+                txtWidth = 50
+                txtHeight = len(labelName)/txtWidth
+                txt = Text(row, height =txtHeight, width=txtWidth, font=(self.fontType, self.fontSize), bg=self.labelBGColor, fg = self.labelFGColor)
+            else:
+                lbl = Label(row, width=32, text=labelName, anchor='w', font=(self.fontType, self.fontSize), bg=self.labelBGColor, fg = self.labelFGColor)
+            row.pack(side=TOP, fill=BOTH, padx=self.paddingX, pady=self.paddingY)
+            row.configure(bg=self.rowBGColor)
+
+            if contentIsTextual:
+                txt.pack(side=LEFT, expand=True, fill = BOTH)
+                txt.insert(END, labelName)
+            else:
+                lbl.pack(side=LEFT, expand=True, fill = BOTH)
+
 
     ################################
     # DATA SUMMARY WINDOW ELEMENTS #

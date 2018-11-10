@@ -10,18 +10,15 @@ import matplotlib
 matplotlib.use("TkAgg")
 from matplotlib import pyplot as plt
 import seaborn as sns
-from sklearn.model_selection import train_test_split, KFold, cross_val_score
-from sklearn.linear_model import LogisticRegression
-from sklearn.linear_model import LinearRegression
+from sklearn import metrics
+from sklearn.model_selection import train_test_split, KFold, cross_val_score, cross_val_predict
+from sklearn.linear_model import LogisticRegression, LinearRegression
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from xgboost import XGBClassifier
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.naive_bayes import GaussianNB
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn import tree
-from sklearn import svm
-from sklearn.ensemble import GradientBoostingClassifier
+from sklearn import tree, svm
 from sklearn.neural_network import MLPClassifier
 
 
@@ -62,12 +59,14 @@ class Model():
     df = None
     original_df = None
     score = None
+    clfReportInfo = []
 
     def __init__(self,mc): #vc = self passed on as parameter by controller
         self.mc = mc
 
     def resetDataFrame(self):
         self.df = self.original_df.copy()
+        self.clfReportInfo.clear()
 
     def convertFileToDataFrame(self, file): #new file opened
         self.df = pd.read_csv((file),low_memory=False,na_values="?")
@@ -125,49 +124,55 @@ class Model():
         Y = self.df[self.className]
 
         if optionPicked == "Recursive Feature Elimination":
-            print("RECURSIVE FEATURE ELIMINATON")
+            self.clfReportInfo.append("Recursive Feature Elimination")
+            #print("RECURSIVE FEATURE ELIMINATON")
             model = LogisticRegression()
             rfe = RFE(model, 5)
             fit = rfe.fit(X, Y)
-            print("Number of features: %d" % fit.n_features_,"\n")
-            logRegFeaturesSelected = dict(zip(featureColumnList, fit.support_))
-            print("FEATURES SELECTED: ",logRegFeaturesSelected,"\n")
+            self.clfReportInfo.append("Number of features: " + str(fit.n_features_))
+            featuresSelectedDict = dict(zip(featureColumnList, fit.support_))
+            featuresSelectedList = []
+            for key, value in featuresSelectedDict.items():
+                if value == True:
+                    featuresSelectedList.append(key)
+            self.clfReportInfo.append("FEATURES SELECTED: "+str(featuresSelectedList))
             logRegFeatureRanking = dict(zip(featureColumnList, fit.ranking_))
             sortedFeatureRanking = sorted(logRegFeatureRanking.items(), key=operator.itemgetter(1))
-            print("FEATURE RANKING: ",sortedFeatureRanking,"\n")
-            print("First %d features have been selected. Number of feature selected modifiable." %fit.n_features_)
+            self.clfReportInfo.append("FEATURE RANKING: "+str(sortedFeatureRanking))
+            self.clfReportInfo.append("First "+str(fit.n_features_)+ " features have been selected. Number of feature selected is modifiable.")
 
         elif optionPicked == "Feature Importance":
-            print("FEATURE IMPORTANCE")
+            self.clfReportInfo.append("Feature Importance")
             model = ExtraTreesClassifier()
             model.fit(X, Y)
             roundedFeatureImp = [round(elem, 3) for elem in model.feature_importances_ ]
             ExtraTreesFeatureRanking = dict(zip(featureColumnList, roundedFeatureImp))
             ExtraTreesFeatureRankingSORTED = sorted(ExtraTreesFeatureRanking.items(), key=operator.itemgetter(1))
-            print("The larger score the more important the attribute\n",ExtraTreesFeatureRankingSORTED)
+            self.clfReportInfo.append("The larger score the more important the attribute")
+            self.clfReportInfo.append(str(ExtraTreesFeatureRankingSORTED))
 
         elif optionPicked == "Univariate Selection":
-            print("UNIVARIATE SELECTION")
-            scoreFuncs = ["f_classif", "mutual_info_classif", "f_regression", "mutual_info_regression", "SelectPercentile", "SelectFpr", "SelectFdr", "SelectFwe", "GenericUnivariateSelect"]
-            #for func in scoreFuncs:
-            #print(func)
-            test = SelectKBest(score_func=mutual_info_classif, k=3)
-            fit = test.fit(X, Y)
-            # summarize scores
-            np.set_printoptions(precision=3)
-            #print("Scoring function: ", func)
-            print("Summarized scores:\n",fit.scores_)
-            features = fit.transform(X)
-            # summarize selected features
-            print("\nSummarized selected features:\n",features[0:5,:])
+            self.clfReportInfo.append("Univariate Selection")
+            scoreFuncs = [f_classif, mutual_info_classif, f_regression, mutual_info_regression, SelectPercentile, SelectFpr, SelectFdr, SelectFwe, GenericUnivariateSelect]
+            for func in scoreFuncs:
+                self.clfReportInfo.append("SCORE FUNCTION USED: "+str(func))
+                test = SelectKBest(score_func=scoreFuncs[1], k=3)
+                fit = test.fit(X, Y)
+                # summarize scores
+                np.set_printoptions(precision=3)
+                #print("Scoring function: ", func)
+                self.clfReportInfo.append("Summarized scores: "+str(fit.scores_))
+                features = fit.transform(X)
+                # summarize selected features
+                self.clfReportInfo.append("Summarized selected features: "+str(features[0:5,:])+"\n")
 
         elif optionPicked == "Principal Component Analysis":
-            print("PRINCIPAL COMPONENT ANALYSIS")
+            self.clfReportInfo.append("Principal Component Analysis")
             pca = PCA(n_components=3)
             fit = pca.fit(X)
             # summarize components
-            print("Explained Variance: %s" % fit.explained_variance_ratio_)
-            print(fit.components_)
+            self.clfReportInfo.append("Explained Variance: " + str(fit.explained_variance_ratio_))
+            self.clfReportInfo.append(str(fit.components_))
 
     def getDataSummary(self):
         uniqueValueOfEachColumn = {}
@@ -405,17 +410,54 @@ class Model():
         y = algo_df[self.className]
 
         if self.performCrossValidation:
-            algo_accuracy = cross_val_score(clf, X, y, cv=10, scoring = "accuracy").mean()
+            y_pred_class = cross_val_predict(clf, X, y, cv=10)
+            algo_accuracy = metrics.accuracy_score(y, y_pred_class)
+            if self.seeClfReport:
+                self.appendClfReport(y,y_pred_class,algo_accuracy)
 
         else:
             X_train, X_test, y_train, y_test = train_test_split(algo_df.drop(self.className, axis=1),algo_df[self.className], test_size=0.33)
             clf.fit(X_train, y_train)
-            preds = clf.predict(X_test)
-            algo_accuracy = (preds == y_test).sum().astype(float) / len(preds)
+            y_pred_class = clf.predict(X_test)
+            algo_accuracy = metrics.accuracy_score(y_test, y_pred_class)
+            if self.seeClfReport:
+                self.appendClfReport(y_test,y_pred_class,algo_accuracy)
+        
+        timeTaken = round((time.time() - startTime),1)
+        self.clfReportInfo.append("Time taken: "+str(timeTaken)+"s")
+        return round(algo_accuracy,2)*100
 
-        timeTaken = time.time() - startTime
-        print("Time taken: %0.1fs" %timeTaken)
-        return round(algo_accuracy,4)*100
+    def appendClfReport(self,y_test,y_pred_class,algo_accuracy):
+        #Clf accuracy
+        algo_accuracy = round((algo_accuracy*100),2)
+        self.clfReportInfo.append("Classifier accuracy: "+str(algo_accuracy)+"%")
 
-    def getClfReport():
-        print("clf rep")
+        #Null Accuracy
+        nullAccuracy = round(((int(y_test.value_counts().head(1)) / len(y_test)))*100,2)
+        self.clfReportInfo.append("Null accuracy: "+str(nullAccuracy)+"%")
+
+        #CV
+        self.clfReportInfo.append("Cross validated: "+str(self.performCrossValidation))
+
+        #Header - Confusion Matrix
+        self.clfReportInfo.append("Confusion Matrix: ")
+        #Contents -  Confusion Matrix
+        confusionMatrix = metrics.confusion_matrix(y_test, y_pred_class)
+        strConfusionMatrix = np.array2string(confusionMatrix)
+        self.clfReportInfo.append(strConfusionMatrix)
+
+        #Clf report
+        clfReport = metrics.classification_report(y_test,y_pred_class)
+        self.clfReportInfo.append(clfReport)
+
+        #Plot confusion matrix
+        #self.plotConfusionMatrix(confusionMatrix)
+
+
+    def plotConfusionMatrix(self, confusionMatrix):
+        plt.subplot()
+        classNameUniqueLabels = self.df[self.className].unique().tolist()
+        sns.heatmap(confusionMatrix, annot=True, xticklabels=classNameUniqueLabels, yticklabels=classNameUniqueLabels)
+        fig = plt.gcf()
+        fig.canvas.set_window_title("Confusion Matrix") 
+        plt.show(block = False)

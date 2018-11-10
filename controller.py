@@ -22,7 +22,7 @@ class Controller():
         self.model.maxLabelCountWhereOneHotEncodePerformed = int(entries[2])
         self.model.algorithmChosen = self.view.getAlgorithmChosen()
         self.model.performCrossValidation = self.view.getCrossValidationSelection()
-        #self.model.seeClfReport = self.view.getClfReportSelection()
+        self.model.seeClfReport = self.view.getClfReportSelection()
         self.model.dropColumnsManually = self.view.getDropColumnsManuallySelection()
         if self.model.dropColumnsManually: #If user has manually selected columns to be dropped
             self.model.userDefinedColumnsToBeDropped = self.view.getCheckedList(self.model.getAllColumnNames())
@@ -42,14 +42,19 @@ class Controller():
             self.view.displayWarningMessage(exc)
 
     def runButtonPressed(self):
-        try:
-            self.initializeModel()
-            self.model.executeOperation()
-            self.view.displayResult(self.model.algorithmChosen, self.model.score, self.model.performCrossValidation)       
-            self.model.resetDataFrame()
-        except Exception as exc:
-            self.model.resetDataFrame()
-            self.view.displayErrorMessage(exc)
+        #try:
+        self.initializeModel()
+        self.model.executeOperation()
+
+        if self.model.seeClfReport:
+            windowName = self.model.algorithmChosen+" Classification Report"
+            self.view.displayInfoInNewWindow(windowName,self.model.clfReportInfo,False)
+        else:
+            self.view.displayResult(self.model.algorithmChosen, self.model.score, self.model.performCrossValidation)
+        self.model.resetDataFrame()
+        #except Exception as exc:
+        #    self.model.resetDataFrame()
+        #    self.view.displayErrorMessage(exc)
 
     def openFileButtonPressed(self, file):
         self.model.fileNameAndPath = file #every time a new file is uploaded, model will be updated
@@ -71,8 +76,10 @@ class Controller():
             if dropColumnsManually and classNameExists:
                 self.view.createChecklist(allColumnNames)
         except:
-            self.model.resetDataFrame()
-            self.view.displayWarningMessage("You did not select any file")
+            try:
+                self.model.resetDataFrame()
+            except:
+                self.view.displayWarningMessage("You did not select any file")
 
     def dataSummaryBtnPressed(self):
         allColumnNames = self.model.getAllColumnNames()
@@ -88,6 +95,8 @@ class Controller():
         #self.model.maxLabelCountWhereOneHotEncodePerformed = int(entries[2])
         self.initializeModel()
         self.model.featureSelector(self.view.getFeatureSelectorSelection())
+
+        self.view.displayInfoInNewWindow(self.model.clfReportInfo.pop(0),self.model.clfReportInfo,True)
         self.model.resetDataFrame()
     #    except: 
      #       self.view.displayWarningMessage("You did not select any file")
