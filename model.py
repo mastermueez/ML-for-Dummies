@@ -416,3 +416,6 @@ class Model():
         timeTaken = time.time() - startTime
         print("Time taken: %0.1fs" %timeTaken)
         return round(algo_accuracy,4)*100
+
+    def getClfReport():
+        print("clf rep")
