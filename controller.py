@@ -101,6 +101,16 @@ class Controller():
     #    except: 
      #       self.view.displayWarningMessage("You did not select any file")
 
+
+
+    def generateBarChartBtnPressed(self):
+        try:
+            self.model.generateBarChart(self.view.getBarChartFeatureColSelection())
+            self.model.resetDataFrame() #null rows had to be dropped to generate hist
+        except Exception as exc:
+            self.model.resetDataFrame()
+            self.view.displayErrorMessage(exc)
+
     def generateHistogramBtnPressed(self):
         try:
             self.model.generateHistogram(self.view.getHistFeatureColSelection())
@@ -108,7 +118,6 @@ class Controller():
         except Exception as exc:
             self.model.resetDataFrame()
             self.view.displayErrorMessage(exc)
-
 
     def generateScatterPlotBtnPressed(self):
         x = self.view.getScatterPlotXSelection()

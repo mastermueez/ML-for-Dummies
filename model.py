@@ -109,8 +109,6 @@ class Model():
             self.bestHyperParameterSelector(self.featureColumnList)
         else:
             self.runSelectedAlgorithm()
-            if self.seeClfReport:
-                self.generateClfReport()
 
     def bestHyperParameterSelector(self, featureColumnList):
         print()
@@ -202,43 +200,44 @@ class Model():
         return uniqueValueOfEachColumn, strRowAndColCount, columnNameWithNullPercentageDictionary
  
 
+    def generateBarChart(self,colName):
+        #Getting rid of null values:
+        self.df.dropna(inplace = True)
+        plt.clf()
+        sns.set(rc={'figure.figsize':(8,6)})
+        fig = sns.countplot(x=colName, data=self.df)            
+        # Rotate x-labels
+        if len(self.df[colName].unique()) > 5:
+            plt.xticks(rotation=90)
+            plt.tight_layout()
+        title = colName+" Bar Chart"
+        fig = plt.gcf()
+        fig.canvas.set_window_title(title) 
+        plt.show(block = False)
+
     def generateHistogram(self,colName):
         #Getting rid of null values:
         self.df.dropna(inplace = True)
+        plt.clf()
         sns.set(rc={'figure.figsize':(8,6)})
-        if self.df[colName].dtype == "object": #Column contains string data
-            #Bar plots help visualize the distributions of categorical variables
-            # Count Plot (a.k.a. Bar Plot)
-            fig = sns.countplot(x=colName, data=self.df)            
-            # Rotate x-labels
-            if len(self.df[colName].unique()) > 5:
-                plt.xticks(rotation=90)
-                plt.tight_layout()
-            title = colName+" Bar Plot"
-            fig = plt.gcf()
-            fig.canvas.set_window_title(title) 
-            plt.show()
-        else: #Column contains numeric data
-            #Histograms allow you to plot the distributions of numeric variables.
-            fig = sns.distplot(self.df[colName])
-            plt.ticklabel_format(style='plain', axis='x')
-            title = colName+" Histogram"
-            fig = plt.gcf()
-            fig.canvas.set_window_title(title) 
-            plt.show()
+        #Column contains numeric data
+        #Histograms allow you to plot the distributions of numeric variables.
+        fig = sns.distplot(self.df[colName])
+        plt.ticklabel_format(style='plain', axis='x')
+        title = colName+" Histogram"
+        fig = plt.gcf()
+        fig.canvas.set_window_title(title) 
+        plt.show(block = False)
 
     def generateScatterPlot(self,x,y):
         self.df.dropna(inplace = True)
-        sns.set(rc={'figure.figsize':(8,6)})
+        #plt.clf()
+        fig = sns.set(rc={'figure.figsize':(8,6)})
         sns.pairplot(self.df, x_vars=x, y_vars=y, size=7, aspect=1, kind='reg')
         title = y+" vs "+x+" Scatter Plot"
         fig = plt.gcf()
         fig.canvas.set_window_title(title) 
-        plt.show()
-
-    def generateClfReport(self):
-        print()
-
+        plt.show(block = False)
 
 
     def runSelectedAlgorithmOnEveryFeatureCombination(self, featureColumnList):
@@ -380,28 +379,29 @@ class Model():
         if self.algorithmChosen == "Linear Regression":
             self.score = self.linearRegression()
         elif self.algorithmChosen == "Logistic Regression":
-            self.score = self.getModelScore(LogisticRegression())
+            self.score = self.getModelScore(LogisticRegression(), False)
         elif self.algorithmChosen == "Linear Discriminant Analysis":
-            self.score = self.getModelScore(LinearDiscriminantAnalysis())
+            self.score = self.getModelScore(LinearDiscriminantAnalysis(), False)
         elif self.algorithmChosen == "XG Boost":
-            self.score = self.getModelScore(XGBClassifier(n_estimators=100))
+            self.score = self.getModelScore(XGBClassifier(learning_rate=0.01, n_estimators=100, objective='binary:logistic',
+                    silent=True, nthread=1), True)
         elif self.algorithmChosen == "Random Forest Classifier":
-            self.score = self.getModelScore(RandomForestClassifier(n_estimators=100))
+            self.score = self.getModelScore(RandomForestClassifier(n_estimators=100), True)
         elif self.algorithmChosen == "Gaussian Naive Bayes":
-            self.score = self.getModelScore(GaussianNB())
+            self.score = self.getModelScore(GaussianNB(), False)
         elif self.algorithmChosen == "K Nearest Neighbor":
-            self.score = self.getModelScore(KNeighborsClassifier(n_neighbors=6))
+            self.score = self.getModelScore(KNeighborsClassifier(n_neighbors=6), False)
         elif self.algorithmChosen == "Decision Tree Classifier":
-            self.score = self.getModelScore(tree.DecisionTreeClassifier())
+            self.score = self.getModelScore(tree.DecisionTreeClassifier(), True)
         elif self.algorithmChosen == "Support Vector Machine":
-            self.score = self.getModelScore(svm.SVC())
+            self.score = self.getModelScore(svm.SVC(), False)
         elif self.algorithmChosen == "Gradient Boosting Machine":
-            self.score = self.getModelScore(GradientBoostingClassifier(n_estimators=100, learning_rate=1.0, max_depth=1, random_state=0))
+            self.score = self.getModelScore(GradientBoostingClassifier(n_estimators=100, learning_rate=1.0, max_depth=1, random_state=0), True)
         elif self.algorithmChosen == "Multilayer Perceptron":
-            self.score = self.getModelScore(MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5, 2), random_state=1))
+            self.score = self.getModelScore(MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5, 2), random_state=1), False)
 
 
-    def getModelScore(self, clf):
+    def getModelScore(self, clf, findFeatureImp):
         startTime = time.time()        
         algo_df = self.df.copy()
         algo_df = algo_df.dropna()
@@ -420,6 +420,14 @@ class Model():
             clf.fit(X_train, y_train)
             y_pred_class = clf.predict(X_test)
             algo_accuracy = metrics.accuracy_score(y_test, y_pred_class)
+            if findFeatureImp:
+                #Feature Importance
+                self.clfReportInfo.append("Feature Importance:")
+                df_featureImp = pd.DataFrame({'Variable':X.columns,'Importance':clf.feature_importances_.round(decimals = 2)}).sort_values('Importance',ascending=False)
+                featureImpStr = ""
+                for index in df_featureImp.index:
+                    featureImpStr += str(df_featureImp.at[index, "Variable"]) + " - " + str(df_featureImp.at[index, "Importance"]) +"\n"
+                self.clfReportInfo.append(featureImpStr)
             if self.seeClfReport:
                 self.appendClfReport(y_test,y_pred_class,algo_accuracy)
         
@@ -449,6 +457,8 @@ class Model():
         #Clf report
         clfReport = metrics.classification_report(y_test,y_pred_class)
         self.clfReportInfo.append(clfReport)
+
+        
 
         #Plot confusion matrix
         #self.plotConfusionMatrix(confusionMatrix)

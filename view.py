@@ -42,6 +42,7 @@ class View():
     currentFeatureSelectorOption = None
     
     #NEW WINDOW VARIABLES
+    currentBarChartFeatureColOption = None
     currentHistFeatureColOption = None
     currentScatterPlotXOption = None
     currentScatterPlotYOption = None
@@ -172,7 +173,7 @@ class View():
         option_Menu.config(font=(self.fontType, self.fontSize),bg = self.entryBGColor, fg=self.entryFGColor)
         option_Menu.pack(side = LEFT)
 
-        btn.pack(side=RIGHT, padx=self.paddingX, pady=self.paddingY)
+        btn.pack(side=LEFT, padx=self.paddingX, pady=self.paddingY)
         return currentOption
 
 
@@ -335,6 +336,10 @@ class View():
     # DATA SUMMARY WINDOW ELEMENTS #
     ################################
 
+
+    def getBarChartFeatureColSelection(self):
+        return self.currentBarChartFeatureColOption.get()
+
     def getHistFeatureColSelection(self):
         return self.currentHistFeatureColOption.get()
 
@@ -377,10 +382,15 @@ class View():
             colNullPctContentLabel.pack(side=LEFT)
             index += 1
 
+        #Bar chart option menu
+        defaultBarChartFeatureColOption = allColumnNames[0]
+        eventHandler = self.vc.generateBarChartBtnPressed
+        self.currentBarChartFeatureColOption = self.createOptionMenuWithButton("Bar chart axis",defaultBarChartFeatureColOption,allColumnNames,"Generate", eventHandler, True, newWindow)
+
         #Histogram option menu
-        defaultHistFeatureColOption = allColumnNames[0]
+        defaultHistFeatureColOption = allNumericColumnNames[0]
         eventHandler = self.vc.generateHistogramBtnPressed
-        self.currentHistFeatureColOption = self.createOptionMenuWithButton("Bar plot/histogram axis",defaultHistFeatureColOption,allColumnNames,"Generate", eventHandler, True, newWindow)
+        self.currentHistFeatureColOption = self.createOptionMenuWithButton("Histogram axis",defaultHistFeatureColOption,allNumericColumnNames,"Generate", eventHandler, True, newWindow)
 
         #Scatter plot option menu
         lblName = ["Scatter plot: X-axis"," Y-axis"]
@@ -421,6 +431,6 @@ class View():
         option_Menu2.config(font=(self.fontType, self.fontSize),bg = self.entryBGColor, fg=self.entryFGColor)
         option_Menu2.pack(side = LEFT)
 
-        btn.pack(side=RIGHT, padx=self.paddingX, pady=self.paddingY)
+        btn.pack(side=LEFT, padx=self.paddingX, pady=self.paddingY)
         return currentOption1, currentOption2
 
