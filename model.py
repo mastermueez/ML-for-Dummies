@@ -481,18 +481,3 @@ class Model():
         fig = plt.gcf()
         fig.canvas.set_window_title("Confusion Matrix") 
         plt.show(block = False)
-
-
-    def generateHistogram(self,colName):
-        #Getting rid of null values:
-        self.df.dropna(inplace = True)
-        plt.clf()
-        sns.set(rc={'figure.figsize':(8,6)})
-        #Column contains numeric data
-        #Histograms allow you to plot the distributions of numeric variables.
-        fig = sns.distplot(self.df[colName])
-        plt.ticklabel_format(style='plain', axis='x')
-        title = colName+" Histogram"
-        fig = plt.gcf()
-        fig.canvas.set_window_title(title) 
-        plt.show(block = False)
