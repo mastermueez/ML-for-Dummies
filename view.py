@@ -8,7 +8,7 @@ from tkinter import filedialog, messagebox
 #       --Has setters and getters to communicate with controller
 
 class View():
-
+    defaultTargetClass = "Success"
     #UI ELEMENTS
     fontType = "COURIER"
     fontSize = 18
@@ -61,7 +61,7 @@ class View():
         #ALGORITHM OPTION MENU
         algoSelectionLabelName = "Select algorithm"
         algoDefaultOption = "Gaussian Naive Bayes"
-        algoOptions = [algoDefaultOption, "Linear Regression", "Logistic Regression", "Linear Discriminant Analysis", "XG Boost", "Random Forest Classifier","K Nearest Neighbor","Decision Tree Classifier","Support Vector Machine","Gradient Boosting Machine","Multilayer Perceptron"]
+        algoOptions = [algoDefaultOption, "Linear Regression", "Logistic Regression", "Linear Discriminant Analysis", "Decision Tree Classifier", "Random Forest Classifier","Gradient Boosting Machine","XG Boost","K Nearest Neighbor","Support Vector Machine","Multilayer Perceptron"]
         self.currentAlgorithmOption = self.createOptionMenu(algoSelectionLabelName, algoDefaultOption, algoOptions)
 
         #CLASSIFICATION REPORT OPTION MENU
@@ -108,7 +108,7 @@ class View():
     def createForm(self):
         #LABELS AND ENTRIES
         index = 0
-        defaultEntry = ['class', '67', '2']
+        defaultEntry = [self.defaultTargetClass, '67', '2']
         for labelText in self.labelTextList:
             row = Frame()    
             label = Label(row, width=36, text = labelText, anchor='w', font=(self.fontType, self.fontSize), bg = self.labelBGColor, fg = self.labelFGColor)

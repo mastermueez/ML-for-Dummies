@@ -205,7 +205,8 @@ class Model():
         self.df.dropna(inplace = True)
         plt.clf()
         sns.set(rc={'figure.figsize':(8,6)})
-        fig = sns.countplot(x=colName, data=self.df)            
+        fig = sns.countplot(x=colName, data=self.df, order = self.df[colName].value_counts().index)
+        fig.set(ylabel= "Frequency")            
         # Rotate x-labels
         if len(self.df[colName].unique()) > 5:
             plt.xticks(rotation=90)
@@ -348,7 +349,7 @@ class Model():
                         self.oneHotEncode(column)
         #print("Number of columns that have been-\nLabel encoded: %d, One hot encoded: %d"%(labelEncodeCount,oneHotEncodeCount))
 
-    def linearRegression(self):
+    def getLinearRegressionScore(self):
         #print("Executing Linear Regression")
         lr_df = self.df
         lr_df = self.df.dropna()
@@ -376,29 +377,27 @@ class Model():
         return lr_accuracy
 
     def runSelectedAlgorithm(self):
+        #objective='binary:logistic',colsample_bytree= 0.7, gamma=0,learning_rate= 0.005,max_depth=5, min_child_weight=5, n_estimators= 100, subsample=0.8
+        classfierDict =  {
+            "Linear Discriminant Analysis": LinearDiscriminantAnalysis(),
+            "Logistic Regression": LogisticRegression(n_jobs=-1),
+            "Decision Tree Classifier": tree.DecisionTreeClassifier(),
+            "Random Forest Classifier": RandomForestClassifier(n_jobs = -1, n_estimators=100),
+            "Gradient Boosting Machine": GradientBoostingClassifier(n_estimators=100, learning_rate=1.0, max_depth=1, random_state=0),
+            "XG Boost": XGBClassifier(n_estimators= 100),
+            "Gaussian Naive Bayes": GaussianNB(),
+            "K Nearest Neighbor": KNeighborsClassifier(n_neighbors=6),
+            "Support Vector Machine": svm.SVC(probability=True),
+            "Multilayer Perceptron": MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5, 2), random_state=1)
+        }
         if self.algorithmChosen == "Linear Regression":
-            self.score = self.linearRegression()
-        elif self.algorithmChosen == "Logistic Regression":
-            self.score = self.getModelScore(LogisticRegression(), False)
-        elif self.algorithmChosen == "Linear Discriminant Analysis":
-            self.score = self.getModelScore(LinearDiscriminantAnalysis(), False)
-        elif self.algorithmChosen == "XG Boost":
-            self.score = self.getModelScore(XGBClassifier(learning_rate=0.01, n_estimators=100, objective='binary:logistic',
-                    silent=True, nthread=1), True)
-        elif self.algorithmChosen == "Random Forest Classifier":
-            self.score = self.getModelScore(RandomForestClassifier(n_estimators=100), True)
-        elif self.algorithmChosen == "Gaussian Naive Bayes":
-            self.score = self.getModelScore(GaussianNB(), False)
-        elif self.algorithmChosen == "K Nearest Neighbor":
-            self.score = self.getModelScore(KNeighborsClassifier(n_neighbors=6), False)
-        elif self.algorithmChosen == "Decision Tree Classifier":
-            self.score = self.getModelScore(tree.DecisionTreeClassifier(), True)
-        elif self.algorithmChosen == "Support Vector Machine":
-            self.score = self.getModelScore(svm.SVC(), False)
-        elif self.algorithmChosen == "Gradient Boosting Machine":
-            self.score = self.getModelScore(GradientBoostingClassifier(n_estimators=100, learning_rate=1.0, max_depth=1, random_state=0), True)
-        elif self.algorithmChosen == "Multilayer Perceptron":
-            self.score = self.getModelScore(MLPClassifier(solver='lbfgs', alpha=1e-5, hidden_layer_sizes=(5, 2), random_state=1), False)
+            self.score = self.getLinearRegressionScore()
+        else:
+            findFeatureImp = False
+            #Feature importance is only available for tree based classifiers
+            if self.algorithmChosen == "Decision Tree Classifier" or self.algorithmChosen == "Random Forest Classifier" or self.algorithmChosen == "Gradient Boosting Machine" or self.algorithmChosen == "XG Boost":
+                findFeatureImp = True
+            self.score = self.getModelScore(classfierDict[self.algorithmChosen], findFeatureImp)
 
 
     def getModelScore(self, clf, findFeatureImp):
@@ -413,13 +412,14 @@ class Model():
             y_pred_class = cross_val_predict(clf, X, y, cv=10)
             algo_accuracy = metrics.accuracy_score(y, y_pred_class)
             if self.seeClfReport:
-                self.appendClfReport(y,y_pred_class,algo_accuracy)
+                self.appendClfReport(y,y_pred_class,algo_accuracy,algo_df)
 
         else:
             X_train, X_test, y_train, y_test = train_test_split(algo_df.drop(self.className, axis=1),algo_df[self.className], test_size=0.33)
             clf.fit(X_train, y_train)
             y_pred_class = clf.predict(X_test)
             algo_accuracy = metrics.accuracy_score(y_test, y_pred_class)
+            
             if findFeatureImp:
                 #Feature Importance
                 self.clfReportInfo.append("Feature Importance:")
@@ -428,14 +428,26 @@ class Model():
                 for index in df_featureImp.index:
                     featureImpStr += str(df_featureImp.at[index, "Variable"]) + " - " + str(df_featureImp.at[index, "Importance"]) +"\n"
                 self.clfReportInfo.append(featureImpStr)
+
             if self.seeClfReport:
-                self.appendClfReport(y_test,y_pred_class,algo_accuracy)
+                self.appendClfReport(y_test,y_pred_class,algo_accuracy,algo_df)
+                #Plot ROC curve
+                if algo_df[self.className].nunique() == 2:
+                    y_pred_proba = clf.predict_proba(X_test)[::,1]
+                    fpr, tpr, _ = metrics.roc_curve(y_test,  y_pred_proba)
+                    auc = metrics.roc_auc_score(y_test, y_pred_proba)
+                    plt.plot(fpr,tpr,label="data 1, auc="+str(auc))
+                    plt.legend(loc=4)
+                    title = self.className+" ROC Curve"
+                    fig = plt.gcf()
+                    fig.canvas.set_window_title(title) 
+                    plt.show(block = False)
         
         timeTaken = round((time.time() - startTime),1)
         self.clfReportInfo.append("Time taken: "+str(timeTaken)+"s")
-        return round(algo_accuracy,2)*100
+        return (algo_accuracy*100)
 
-    def appendClfReport(self,y_test,y_pred_class,algo_accuracy):
+    def appendClfReport(self,y_test,y_pred_class,algo_accuracy,algo_df):
         #Clf accuracy
         algo_accuracy = round((algo_accuracy*100),2)
         self.clfReportInfo.append("Classifier accuracy: "+str(algo_accuracy)+"%")
@@ -458,8 +470,6 @@ class Model():
         clfReport = metrics.classification_report(y_test,y_pred_class)
         self.clfReportInfo.append(clfReport)
 
-        
-
         #Plot confusion matrix
         #self.plotConfusionMatrix(confusionMatrix)
 
@@ -470,4 +480,19 @@ class Model():
         sns.heatmap(confusionMatrix, annot=True, xticklabels=classNameUniqueLabels, yticklabels=classNameUniqueLabels)
         fig = plt.gcf()
         fig.canvas.set_window_title("Confusion Matrix") 
+        plt.show(block = False)
+
+
+    def generateHistogram(self,colName):
+        #Getting rid of null values:
+        self.df.dropna(inplace = True)
+        plt.clf()
+        sns.set(rc={'figure.figsize':(8,6)})
+        #Column contains numeric data
+        #Histograms allow you to plot the distributions of numeric variables.
+        fig = sns.distplot(self.df[colName])
+        plt.ticklabel_format(style='plain', axis='x')
+        title = colName+" Histogram"
+        fig = plt.gcf()
+        fig.canvas.set_window_title(title) 
         plt.show(block = False)
