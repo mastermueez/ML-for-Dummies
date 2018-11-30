@@ -7,7 +7,7 @@ Run a bunch of machine learning algorithms on any CSV file as well as generate s
 
 
 ## Fields
-![Device:](https://github.com/mastermueez/ML-for-Dummies/blob/master/Pics/MainWindow.png)
+![Main Window:](https://github.com/mastermueez/ML-for-Dummies/blob/master/Pics/MainWindow.png)
 * **Target class**: This is the class that you want to predict. This needs to be specified before you open your file.
 *  **Null % at which columns are dropped**: If you enter a value of say, 60 here, any column in your dataset with 60% or more of its values missing will be dropped automatically. Because it is better to drop that column entirely than drop/alter 60% or more of your dataset’s rows
 * **Max label count for One Hot Encoding**: This determines the threshold for one hot encoding. Suppose you enter a value of 3 and a column (Gender) in your dataset has three unique values (Male, Female, Other), then that column will be one hot encoded. Also, any column (e.g: Type) with less than three unique values (e.g: Free, Paid) will be one hot encoded. All other columns (with unique values > threshold set) will be label encoded. This [article](http://pbpython.com/categorical-encoding.html) explains encoding really well.
@@ -38,7 +38,7 @@ With cross validation off, you will also get feature importance if you pick a tr
 * **Export CSV**: Generates an encoded version of the file (based on the values of the first three fields) in the directory from which it was opened.
 
 ## Data Summary
-![Device:](https://github.com/mastermueez/ML-for-Dummies/blob/master/Pics/DataSummary.png)
+![Data Summary:](https://github.com/mastermueez/ML-for-Dummies/blob/master/Pics/DataSummary.png)
 This option appears once a file has been opened. It contains the following information of your dataset:
 * **Total column count**
 * **Total row count**
