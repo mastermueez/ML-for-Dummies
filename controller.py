@@ -42,19 +42,19 @@ class Controller():
             self.view.displayWarningMessage(exc)
 
     def runButtonPressed(self):
-        #try:
-        self.initializeModel()
-        self.model.executeOperation()
+        try:
+            self.initializeModel()
+            self.model.executeOperation()
 
-        if self.model.seeClfReport:
-            windowName = self.model.algorithmChosen+" Classification Report"
-            self.view.displayInfoInNewWindow(windowName,self.model.clfReportInfo,False)
-        else:
-            self.view.displayResult(self.model.algorithmChosen, self.model.score, self.model.performCrossValidation)
-        self.model.resetDataFrame()
-        #except Exception as exc:
-        #    self.model.resetDataFrame()
-        #    self.view.displayErrorMessage(exc)
+            if self.model.seeClfReport:
+                windowName = self.model.algorithmChosen+" Classification Report"
+                self.view.displayInfoInNewWindow(windowName,self.model.clfReportInfo,False)
+            else:
+                self.view.displayResult(self.model.algorithmChosen, self.model.score, self.model.performCrossValidation)
+            self.model.resetDataFrame()
+        except Exception as exc:
+            self.model.resetDataFrame()
+            self.view.displayErrorMessage(exc)
 
     def openFileButtonPressed(self, file):
         self.model.fileNameAndPath = file #every time a new file is uploaded, model will be updated

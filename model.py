@@ -367,11 +367,15 @@ class Model():
             # convert from MSE to RMSE
             rmse_scores = np.sqrt(mse_scores)
             lr_accuracy = rmse_scores.mean()
+            if self.seeClfReport:
+                self.clfReportInfo.append("RMSE Score: "+str(lr_accuracy))
         else:
             X_train, X_test, y_train, y_test = train_test_split(lr_df.drop(self.className, axis=1),lr_df[self.className], test_size=0.33)
             lm.fit(X_train, y_train)
-            preds = lm.predict(X_test)
+            #preds = lm.predict(X_test)
             lr_accuracy = lm.score(X_test, y_test)
+            if self.seeClfReport:
+                self.clfReportInfo.append("Coefficient of determination: "+str(lr_accuracy))
         # calculate the average RMSE
         
         return lr_accuracy
@@ -435,8 +439,9 @@ class Model():
                 if algo_df[self.className].nunique() == 2:
                     y_pred_proba = clf.predict_proba(X_test)[::,1]
                     fpr, tpr, _ = metrics.roc_curve(y_test,  y_pred_proba)
-                    auc = metrics.roc_auc_score(y_test, y_pred_proba)
-                    plt.plot(fpr,tpr,label="data 1, auc="+str(auc))
+                    auc = round(metrics.roc_auc_score(y_test, y_pred_proba),3)
+                    sns.set(rc={'grid.linestyle': '--'})
+                    plt.plot(fpr,tpr,label="AUC = "+str(auc))
                     plt.legend(loc=4)
                     title = self.className+" ROC Curve"
                     fig = plt.gcf()
