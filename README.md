@@ -44,8 +44,8 @@ This option appears once a file has been opened. It contains the following infor
 * **Total row count**
 * **Null row count**: The number of rows with a missing value in at least one corresponding cell
 * **All column names** followed by:
- * The percentage of missing values
- * Number of unique values (null is considered a unique value)
+  * The percentage of missing values
+  * Number of unique values (null is considered a unique value)
 * **Bar chart**: Generates an ordered bar chart of the chosen column
 * **Histogram**: Only numerical options are shown. Hence, it may be a useful tool to identify which columns will need encoding.
 * **Scatter Plot**: Allows visualisation of the correlation between any two numeric columns
