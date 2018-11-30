@@ -398,7 +398,7 @@ class Model():
             "Decision Tree Classifier": tree.DecisionTreeClassifier(),
             "Random Forest Classifier": RandomForestClassifier(n_jobs = -1, n_estimators=100),
             "Gradient Boosting Machine": GradientBoostingClassifier(n_estimators=100, learning_rate=1.0, max_depth=1, random_state=0),
-            "XG Boost": XGBClassifier(objective='binary:logistic',colsample_bytree= 0.7, gamma=0,learning_rate= 0.005,max_depth=5, min_child_weight=5, n_estimators= 100, subsample=0.8),
+            "XG Boost": XGBClassifier(n_estimators= 100),
             "Gaussian Naive Bayes": GaussianNB(),
             "K Nearest Neighbor": KNeighborsClassifier(n_neighbors=6),
             "Support Vector Machine": svm.SVC(probability=True),
