@@ -11,7 +11,7 @@ class View():
     defaultTargetClass = "Success"
     #UI ELEMENTS
     fontType = "COURIER"
-    fontSize = 18
+    fontSize = 14
 
     windowBGColor = "WHITE"
     labelBGColor = windowBGColor
