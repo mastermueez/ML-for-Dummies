@@ -245,6 +245,7 @@ class Model():
         bestScore = 0
         bestFeatureSubset = []
         iterationCount = 1
+        timeTakenForEveryCombination = time.time()
         try:
             for features in range(len(featureColumnList)+1, 0, -1):
             #for features in range(1,len(featureColumnList)+1):
@@ -264,6 +265,15 @@ class Model():
                     print(self.strBestFeatures)
                     print(self.strCurrentFeatures)
                     iterationCount = iterationCount + 1
+            if self.seeClfReport:
+                self.clfReportInfo.append("Best score: "+str(round(bestScore,2))+"%")
+                self.clfReportInfo.append("Features used:")
+                self.clfReportInfo.append(str(bestFeatureSubset))
+                timeTakenForEveryCombination = (time.time() - timeTakenForEveryCombination)
+                if timeTakenForEveryCombination>60:
+                    self.clfReportInfo.append("Total time taken: "+str(round((timeTakenForEveryCombination/60),1))+"m")
+                else:
+                    self.clfReportInfo.append("Total time taken: "+str(round(timeTakenForEveryCombination,1))+"s")
 
         except KeyboardInterrupt:
             print("User cancelled program at iteration number %d"%iterationCount)
@@ -388,7 +398,7 @@ class Model():
             "Decision Tree Classifier": tree.DecisionTreeClassifier(),
             "Random Forest Classifier": RandomForestClassifier(n_jobs = -1, n_estimators=100),
             "Gradient Boosting Machine": GradientBoostingClassifier(n_estimators=100, learning_rate=1.0, max_depth=1, random_state=0),
-            "XG Boost": XGBClassifier(n_estimators= 100),
+            "XG Boost": XGBClassifier(objective='binary:logistic',colsample_bytree= 0.7, gamma=0,learning_rate= 0.005,max_depth=5, min_child_weight=5, n_estimators= 100, subsample=0.8),
             "Gaussian Naive Bayes": GaussianNB(),
             "K Nearest Neighbor": KNeighborsClassifier(n_neighbors=6),
             "Support Vector Machine": svm.SVC(probability=True),
@@ -415,7 +425,7 @@ class Model():
         if self.performCrossValidation:
             y_pred_class = cross_val_predict(clf, X, y, cv=10)
             algo_accuracy = metrics.accuracy_score(y, y_pred_class)
-            if self.seeClfReport:
+            if self.seeClfReport and not self.alternateEveryFeature:
                 self.appendClfReport(y,y_pred_class,algo_accuracy,algo_df)
 
         else:
@@ -433,7 +443,7 @@ class Model():
                     featureImpStr += str(df_featureImp.at[index, "Variable"]) + " - " + str(df_featureImp.at[index, "Importance"]) +"\n"
                 self.clfReportInfo.append(featureImpStr)
 
-            if self.seeClfReport:
+            if self.seeClfReport and not self.alternateEveryFeature:
                 self.appendClfReport(y_test,y_pred_class,algo_accuracy,algo_df)
                 #Plot ROC curve
                 if algo_df[self.className].nunique() == 2:
@@ -449,7 +459,8 @@ class Model():
                     plt.show(block = False)
         
         timeTaken = round((time.time() - startTime),1)
-        self.clfReportInfo.append("Time taken: "+str(timeTaken)+"s")
+        if self.seeClfReport and not self.alternateEveryFeature:
+            self.clfReportInfo.append("Time taken: "+str(timeTaken)+"s")
         return (algo_accuracy*100)
 
     def appendClfReport(self,y_test,y_pred_class,algo_accuracy,algo_df):
