@@ -13,14 +13,15 @@ Run a bunch of machine learning algorithms on any CSV file as well as generate s
 * **Max label count for One Hot Encoding**: This determines the threshold for one hot encoding. Suppose you enter a value of 3 and a column (Gender) in your dataset has three unique values (Male, Female, Other), then that column will be one hot encoded. Also, any column (e.g: Type) with less than three unique values (e.g: Free, Paid) will be one hot encoded. All other columns (with unique values > threshold set) will be label encoded. This [article](http://pbpython.com/categorical-encoding.html) explains encoding really well.
 * **Select algorithm**
 * **See classification report**: If selected No, only the accuracy/error of the algorithm will be displayed in the main window after the Run button is pressed. Otherwise, a new window will be opened, containing the following information:
-* Classifier accuracy
-* Null accuracy: This is the accuracy you would obtain if you always predicted the most frequently occurred value in your target class. Suppose your dataset has 100 rows and your target class has two unique values, *Free* and *Paid*, occupying 70 and 30 rows respectively. If you always predict *Free*, you will be right 70/100 times.
-* Cross validated: Whether 10 fold cross validation was used to evaluate your model or not
-* Confusion matrix
-* Classification report containing precision, recall, f1-score and support of your model
-* Time taken
+  * Classifier accuracy
+  * Null accuracy: This is the accuracy you would obtain if you always predicted the most frequently occurred value in your target class. Suppose your dataset has 100 rows and your target class has two unique values, *Free* and *Paid*, occupying 70 and 30 rows respectively. If you always predict *Free*, you will be right 70/100 times.
+  * Cross validated: Whether 10 fold cross validation was used to evaluate your model or not
+  * Confusion matrix
+  * Classification report containing precision, recall, f1-score and support of your model
+  * Time taken
 
 With cross validation off, you will also get feature importance if you pick a tree based classifier. If your target class is binary, an ROC curve will also be generated.
+
 ![Clf Report w/ CV Off:](https://github.com/mastermueez/ML-for-Dummies/blob/master/Pics/Clf.png)
 * **Perform cross validation**: Yes means 10 fold cross validation is used to evaluate your model. No means a train - test ratio of 67:33 is used instead.
 * **Try every possible feature combination**: This runs your chosen algorithm on all possible combinations of the columns in your dataset. For instance, if your dataset has three columns - A, B and C, then the algorithm will be executed 7 times on the following column combinations - (A,B,C), (A,B), (A,C), (B,C), (A), (B), (C). Note that the live results for each iteration will be displayed in the console of your IDE which includes:
