@@ -46,6 +46,7 @@ This option appears once a file has been opened. It contains the following infor
 * **All column names** followed by:
   * The percentage of missing values
   * Number of unique values (null is considered a unique value)
+You cannot stop this operation until all possible combinations have been explored. When that happens a window presenting the best features and the best score will pop up.
 * **Bar chart**: Generates an ordered bar chart of the chosen column
 * **Histogram**: Only numerical options are shown. Hence, it may be a useful tool to identify which columns will need encoding.
 * **Scatter Plot**: Allows visualisation of the correlation between any two numeric columns
