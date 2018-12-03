@@ -27,6 +27,7 @@ With cross validation off, you will also get feature importance if you pick a tr
 * **Try every possible feature combination**: This runs your chosen algorithm on all possible combinations of the columns in your dataset. For instance, if your dataset has three columns - A, B and C, then the algorithm will be executed 7 times on the following column combinations - (A,B,C), (A,B), (A,C), (B,C), (A), (B), (C). Note that the live results for each iteration will be displayed in the console of your IDE which includes:
   * Best score and corresponding feature set
   * Current score and corresponding feature set
+You cannot stop this operation until all possible combinations have been explored. When that happens a window presenting the best features and the best score will pop up. 
 * **Drop columns manually**: If you want to drop columns manually, you need to select Yes before opening a file.
 * **Feature selector**: Finds the most important features in your dataset
 
@@ -46,7 +47,6 @@ This option appears once a file has been opened. It contains the following infor
 * **All column names** followed by:
   * The percentage of missing values
   * Number of unique values (null is considered a unique value)
-You cannot stop this operation until all possible combinations have been explored. When that happens a window presenting the best features and the best score will pop up.
 * **Bar chart**: Generates an ordered bar chart of the chosen column
 * **Histogram**: Only numerical options are shown. Hence, it may be a useful tool to identify which columns will need encoding.
 * **Scatter Plot**: Allows visualisation of the correlation between any two numeric columns
