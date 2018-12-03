@@ -24,10 +24,9 @@ With cross validation off, you will also get feature importance if you pick a tr
 
 ![Clf Report w/ CV Off:](https://github.com/mastermueez/ML-for-Dummies/blob/master/Pics/Clf.png)
 * **Perform cross validation**: Yes means 10 fold cross validation is used to evaluate your model. No means a train - test ratio of 67:33 is used instead.
-* **Try every possible feature combination**: This runs your chosen algorithm on all possible combinations of the columns in your dataset. For instance, if your dataset has three columns - A, B and C, then the algorithm will be executed 7 times on the following column combinations - (A,B,C), (A,B), (A,C), (B,C), (A), (B), (C). Note that the live results for each iteration will be displayed in the console of your IDE which includes:
+* **Try every possible feature combination**: This runs your chosen algorithm on all possible combinations of the columns in your dataset. For instance, if your dataset has three columns - A, B and C, then the algorithm will be executed 7 times on the following column combinations - (A,B,C), (A,B), (A,C), (B,C), (A), (B), (C). You cannot stop this operation until all possible combinations have been explored. When that happens a window presenting the best features and the best score will pop up.  Note that the live results for each iteration will be displayed in the console of your IDE which includes:
   * Best score and corresponding feature set
   * Current score and corresponding feature set
-  You cannot stop this operation until all possible combinations have been explored. When that happens a window presenting the best features and the best score will pop up. 
 * **Drop columns manually**: If you want to drop columns manually, you need to select Yes before opening a file.
 * **Feature selector**: Finds the most important features in your dataset
 
